@@ -1,21 +1,21 @@
-# Configuration loader — reads environment variables from .env file
+# Cargador de configuración — lee variables de entorno del archivo .env
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    # Azure OpenAI Foundry endpoint for the bot's AI model
+    # Endpoint de Azure OpenAI Foundry para el modelo de IA del bot
     FOUNDRY_PROJECT_ENDPOINT: str
-    # AI model to use (default: gpt-4o-mini, a faster variant)
+    # Modelo de IA a usar (predeterminado: gpt-4o-mini, variante más rápida)
     FOUNDRY_MODEL: str = "gpt-4o-mini"
-    # Telegram bot authentication token
+    # Token de autenticación del bot de Telegram
     TELEGRAM_BOT_TOKEN: str
-    # Default Telegram chat ID when sessionId is invalid (fallback)
+    # ID de chat de Telegram predeterminado cuando sessionId es inválido (respaldo)
     TELEGRAM_DEFAULT_CHAT_ID: str = ""
 
     class Config:
-        # Load configuration from .env file in the project root
+        # Carga la configuración desde archivo .env en la raíz del proyecto
         env_file = ".env"
 
 
-# Global settings instance — used throughout the app
+# Instancia global de configuración — usada en toda la aplicación
 settings = Settings()
