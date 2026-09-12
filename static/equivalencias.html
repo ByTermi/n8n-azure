@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>n8n → Python MAF · Equivalencias</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      min-height: 100vh;
+      padding: 40px 20px 80px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #f0f6fc;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #7d8590;
+      font-size: 0.85rem;
+      margin-bottom: 48px;
+    }
+    .subtitle span { color: #ff7b72; }
+
+    /* Section headers */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 40px auto 16px;
+      max-width: 900px;
+    }
+    .section-label .pill {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .section-label hr {
+      flex: 1;
+      border: none;
+      border-top: 1px solid #21262d;
+    }
+
+    /* Row */
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 48px 1fr;
+      align-items: center;
+      max-width: 900px;
+      margin: 0 auto 12px;
+      gap: 0;
+    }
+
+    /* n8n node */
+    .n8n-node {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .n8n-node .icon {
+      width: 32px; height: 32px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .n8n-node .info .name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #e6edf3;
+      margin-bottom: 2px;
+    }
+    .n8n-node .info .type {
+      font-size: 0.68rem;
+      color: #7d8590;
+      font-family: 'Consolas', monospace;
+    }
+
+    /* Arrow */
+    .arrow {
+      text-align: center;
+      color: #3d444d;
+      font-size: 22px;
+      position: relative;
+    }
+    .arrow::after {
+      content: '→';
+      color: #3d444d;
+    }
+
+    /* Python card */
+    .py-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .py-card .icon {
+      width: 32px; height: 32px;
+      border-radius: 6px;
+      background: #1f6feb22;
+      border: 1px solid #1f6feb55;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .py-card .info .file {
+      font-size: 0.68rem;
+      color: #58a6ff;
+      font-family: 'Consolas', monospace;
+      margin-bottom: 3px;
+    }
+    .py-card .info .snippet {
+      font-size: 0.75rem;
+      font-family: 'Consolas', monospace;
+      color: #79c0ff;
+      background: #0d1117;
+      padding: 5px 8px;
+      border-radius: 5px;
+      border: 1px solid #21262d;
+      white-space: pre;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+    .py-card .info .snippet .kw  { color: #ff7b72; }
+    .py-card .info .snippet .fn  { color: #d2a8ff; }
+    .py-card .info .snippet .st  { color: #a5d6ff; }
+    .py-card .info .snippet .cm  { color: #8b949e; }
+
+    /* Node color themes */
+    .green  { background: #1a4731; }
+    .orange { background: #5a3500; }
+    .blue   { background: #0c2d6b; }
+    .purple { background: #2d1f5e; }
+    .red    { background: #5a1a1a; }
+    .teal   { background: #0e3d3d; }
+    .gray   { background: #21262d; }
+    .yellow { background: #3d3000; }
+
+    /* Section pill colors */
+    .pill.triggers   { background: #1a4731; color: #56d364; }
+    .pill.preproc    { background: #3d2b00; color: #f0c544; }
+    .pill.agent      { background: #2d1f5e; color: #bc8cff; }
+    .pill.tools      { background: #0c2d6b; color: #79c0ff; }
+    .pill.output     { background: #5a1a1a; color: #ff7b72; }
+
+    @media (max-width: 640px) {
+      .row { grid-template-columns: 1fr; }
+      .arrow { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>n8n → Python MAF · Equivalencias</h1>
+<p class="subtitle">Cada nodo de n8n mapeado a su equivalente en <span>agent-framework</span> + FastAPI</p>
+
+<!-- ── TRIGGERS ── -->
+<div class="section-label">
+  <span class="pill triggers">🚪 Triggers</span>
+  <hr />
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon green">📨</div>
+    <div class="info">
+      <div class="name">Telegram Trigger</div>
+      <div class="type">n8n-nodes-base.telegramTrigger</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">main.py</div>
+      <div class="snippet"><span class="kw">@app</span>.post(<span class="st">"/telegram"</span>)
+<span class="kw">async def</span> <span class="fn">telegram_handler</span>(request)</div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon orange">🔗</div>
+    <div class="info">
+      <div class="name">Webhook Trigger</div>
+      <div class="type">n8n-nodes-base.webhook · POST /compa-bot</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">main.py</div>
+      <div class="snippet"><span class="kw">@app</span>.post(<span class="st">"/webhook/compa-bot"</span>)
+<span class="kw">async def</span> <span class="fn">webhook</span>(request)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PRE-PROCESAMIENTO ── -->
+<div class="section-label">
+  <span class="pill preproc">⚙️ Pre-procesamiento</span>
+  <hr />
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon yellow">🔧</div>
+    <div class="info">
+      <div class="name">Inyectar Contexto</div>
+      <div class="type">n8n-nodes-base.set · chatInput, sessionId, source, fecha</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">main.py</div>
+      <div class="snippet">chat_input = body.get(<span class="st">"message"</span>) <span class="kw">or</span> body.get(<span class="st">"chatInput"</span>)
+session_id = body.get(<span class="st">"sessionId"</span>) <span class="kw">or</span> <span class="fn">f"wh-{time.time()}"</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon blue">🌦️</div>
+    <div class="info">
+      <div class="name">HTTP: Clima Guadalajara</div>
+      <div class="type">n8n-nodes-base.httpRequest · wttr.in/Guadalajara,Mexico</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">agent.py</div>
+      <div class="snippet"><span class="kw">async def</span> <span class="fn">_fetch_weather</span>():
+    r = <span class="kw">await</span> client.get(<span class="st">"https://wttr.in/Guadalajara,Mexico?format=3"</span>)</div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon yellow">🔧</div>
+    <div class="info">
+      <div class="name">Enriquecer Contexto</div>
+      <div class="type">n8n-nodes-base.set · combina fecha + clima + chatInput</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">agent.py · compa_workflow()</div>
+      <div class="snippet">enriched = <span class="st">f"[CONTEXTO: {_fecha_context()}. Clima: {weather}]\n\n{chat_input}"</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── AGENTE ── -->
+<div class="section-label">
+  <span class="pill agent">🤖 Agente</span>
+  <hr />
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon purple">🤖</div>
+    <div class="info">
+      <div class="name">El Compa Chucho (Agent)</div>
+      <div class="type">@n8n/n8n-nodes-langchain.agent · systemMessage + 4 tools</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">agent.py</div>
+      <div class="snippet">compa = <span class="fn">Agent</span>(
+    client=_client, name=<span class="st">"ElCompaChucho"</span>,
+    instructions=SYSTEM_PROMPT,
+    tools=[wikipedia_search, calculator, ...]
+)</div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon blue">🧠</div>
+    <div class="info">
+      <div class="name">Azure OpenAI (LLM)</div>
+      <div class="type">@n8n/n8n-nodes-langchain.lmChatAzureOpenAi · gpt-4o-mini</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">agent.py</div>
+      <div class="snippet">_client = <span class="fn">FoundryChatClient</span>(
+    project_endpoint=settings.FOUNDRY_PROJECT_ENDPOINT,
+    model=<span class="st">"gpt-4o-mini"</span>,
+    credential=<span class="fn">AzureCliCredential</span>()
+)</div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon teal">💾</div>
+    <div class="info">
+      <div class="name">Memoria del Compa</div>
+      <div class="type">memoryBufferWindow · sessionKey=sessionId, window=10</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">agent.py</div>
+      <div class="snippet">_sessions: dict[str, Session] = {}
+<span class="kw">if</span> session_id <span class="kw">not in</span> _sessions:
+    _sessions[session_id] = compa.<span class="fn">create_session</span>()
+<span class="kw">await</span> compa.<span class="fn">run</span>(msg, session=_sessions[session_id])</div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon purple">🔄</div>
+    <div class="info">
+      <div class="name">@workflow pipeline</div>
+      <div class="type">n8n execution order · enrich → agent → return</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">agent.py</div>
+      <div class="snippet"><span class="kw">@workflow</span>
+<span class="kw">async def</span> <span class="fn">compa_workflow</span>(payload: dict) -> str:
+    ...
+result = <span class="kw">await</span> compa_workflow.<span class="fn">run</span>(payload)
+<span class="kw">return</span> result.<span class="fn">get_outputs</span>()[0]</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOOLS ── -->
+<div class="section-label">
+  <span class="pill tools">🛠️ Tools</span>
+  <hr />
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon blue">📖</div>
+    <div class="info">
+      <div class="name">Wikipedia</div>
+      <div class="type">@n8n/n8n-nodes-langchain.toolWikipedia</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">tools.py</div>
+      <div class="snippet"><span class="kw">@tool</span>(approval_mode=<span class="st">"never_require"</span>)
+<span class="kw">def</span> <span class="fn">wikipedia_search</span>(query: Annotated[str, Field(...)]) -> str</div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon blue">🧮</div>
+    <div class="info">
+      <div class="name">Calculadora</div>
+      <div class="type">@n8n/n8n-nodes-langchain.toolCalculator</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">tools.py</div>
+      <div class="snippet"><span class="kw">@tool</span>(approval_mode=<span class="st">"never_require"</span>)
+<span class="kw">def</span> <span class="fn">calculator</span>(expression: Annotated[str, Field(...)]) -> str
+<span class="cm">    # simpleeval.simple_eval(expression)</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon blue">🔤</div>
+    <div class="info">
+      <div class="name">Analizar Texto</div>
+      <div class="type">@n8n/n8n-nodes-langchain.toolCode · JS custom</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">tools.py</div>
+      <div class="snippet"><span class="kw">@tool</span>(approval_mode=<span class="st">"never_require"</span>)
+<span class="kw">def</span> <span class="fn">analizar_texto</span>(text: Annotated[str, Field(...)]) -> str
+<span class="cm">    # palindrome, wordcount, reverse — port of n8n JS</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon blue">🐱</div>
+    <div class="info">
+      <div class="name">Cat Fact Random</div>
+      <div class="type">@n8n/n8n-nodes-langchain.toolCode · fetch catfact.ninja</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">tools.py</div>
+      <div class="snippet"><span class="kw">@tool</span>(approval_mode=<span class="st">"never_require"</span>)
+<span class="kw">def</span> <span class="fn">dato_random_de_internet</span>() -> str
+<span class="cm">    # httpx.get("https://catfact.ninja/fact")</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── OUTPUT ── -->
+<div class="section-label">
+  <span class="pill output">📤 Salida</span>
+  <hr />
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon gray">❓</div>
+    <div class="info">
+      <div class="name">¿El Compa respondió?</div>
+      <div class="type">n8n-nodes-base.if · output notEmpty → true/false branch</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">main.py</div>
+      <div class="snippet"><span class="kw">try</span>:
+    output = <span class="kw">await</span> <span class="fn">process_message</span>(chat_input, session_id)
+<span class="kw">except</span> Exception:
+    <span class="cm"># → rama ❌</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon orange">✏️</div>
+    <div class="info">
+      <div class="name">Formatear Respuesta</div>
+      <div class="type">n8n-nodes-base.code · añade header + footer Markdown</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">main.py · telegram_handler()</div>
+      <div class="snippet">msg = <span class="st">f"🌮 *El Compa Chucho dice:*\n\n{output}\n\n_— Tu cuate..._"</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon green">✅</div>
+    <div class="info">
+      <div class="name">Telegram ✅</div>
+      <div class="type">n8n-nodes-base.telegram · parse_mode=Markdown</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">main.py</div>
+      <div class="snippet"><span class="kw">await</span> bot.<span class="fn">send_message</span>(
+    chat_id=chat_id, text=msg, parse_mode=<span class="st">"Markdown"</span>
+)</div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon orange">🔗</div>
+    <div class="info">
+      <div class="name">Responder al Webhook</div>
+      <div class="type">n8n-nodes-base.respondToWebhook · JSON 200</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">main.py</div>
+      <div class="snippet"><span class="kw">return</span> {<span class="st">"ok"</span>: <span class="kw">True</span>, <span class="st">"respuesta"</span>: output, <span class="st">"bot"</span>: <span class="st">"El Compa Chucho 🌮"</span>}</div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="n8n-node">
+    <div class="icon red">❌</div>
+    <div class="info">
+      <div class="name">Telegram ❌</div>
+      <div class="type">n8n-nodes-base.telegram · mensaje de error fijo</div>
+    </div>
+  </div>
+  <div class="arrow"></div>
+  <div class="py-card">
+    <div class="icon">🐍</div>
+    <div class="info">
+      <div class="file">main.py · except block</div>
+      <div class="snippet"><span class="kw">except</span> Exception:
+    <span class="kw">await</span> bot.<span class="fn">send_message</span>(chat_id, _ERROR_MSG, ...)</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

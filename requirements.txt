@@ -1,0 +1,10 @@
+agent-framework
+agent-framework-foundry
+azure-identity
+fastapi
+uvicorn[standard]
+python-telegram-bot>=20.0
+httpx
+simpleeval
+pydantic-settings
+python-dotenv
